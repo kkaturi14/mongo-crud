@@ -1,62 +1,60 @@
 'use client'
-import { useRouter } from 'next/navigation'
+
+import { updateTopic } from '@/actions/topicActions'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface EditTopicFormProps {
   id: string
-  title: string
-  description: string
+  initialTitle: string
+  initialDescription: string
 }
 
 export default function EditTopicForm({
   id,
-  title,
-  description,
+  initialTitle,
+  initialDescription,
 }: EditTopicFormProps) {
-  const [newTitle, setNewTitle] = useState(title)
-  const [newDescription, setNewDescription] = useState(description)
+  const [title, setTitle] = useState(initialTitle)
+  const [description, setDescription] = useState(initialDescription)
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     try {
-      const res = await fetch(`/api/topics/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-type': 'application/json' },
-        body: JSON.stringify({ newTitle, newDescription }),
-      })
-      if (!res.ok) throw new Error('Failed to update topic')
-      router.push('/')
-      router.refresh()
+      await updateTopic(id, title, description)
+      router.push('/') // 수정 후 메인 페이지로 이동
     } catch (error) {
-      console.log(error)
+      console.error('토픽 수정 중 오류:', error)
+      alert('토픽 수정 중 오류가 발생했습니다.')
     }
   }
 
   return (
-    <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <input
-        className="border border-slate-500 p-4"
         type="text"
-        placeholder="Topic Title"
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setNewTitle(e.target.value)
-        }
-        value={newTitle}
+        placeholder="Title"
+        className="border border-slate-300 px-4 py-2"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
       />
+
       <textarea
-        className="border border-slate-500 p-4 h-32"
-        placeholder="Topic Description"
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-          setNewDescription(e.target.value)
-        }
-        value={newDescription}
+        placeholder="Description"
+        className="border border-slate-300 px-4 py-2"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        required
       />
+
       <button
-        className="bg-green-800 text-white font-bold px-6 py-3 w-fit rounded-md"
         type="submit"
+        className="bg-blue-500 text-white font-bold px-4 py-2 rounded"
       >
-        Update Topic
+        수정하기
       </button>
     </form>
   )

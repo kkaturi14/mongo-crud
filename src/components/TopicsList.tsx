@@ -1,5 +1,4 @@
 'use client'
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { HiPencilAlt } from 'react-icons/hi'
 import RemoveBtn from './RemoveBtn'
@@ -12,31 +11,14 @@ interface Topic {
   updatedAt: string
 }
 
-export default function TopicsList() {
-  const [topics, setTopics] = useState<Topic[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+interface TopicsListProps {
+  topics: Topic[]
+}
 
-  useEffect(() => {
-    const fetchTopics = async () => {
-      try {
-        const res = await fetch('/api/topics', { cache: 'no-store' })
-        if (!res.ok) throw new Error('Failed to fetch topics')
-        const data = await res.json()
-        setTopics(data.topics ?? [])
-      } catch (e) {
-        console.error('Error loading topics:', e)
-        setError('Failed to load topics')
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchTopics()
-  }, [])
-
-  if (loading) return <p>Loading topics...</p>
-  if (error) return <p>Error: {error}</p>
-  if (topics.length === 0) return <p>No topics found.</p>
+export default function TopicsList({ topics }: TopicsListProps) {
+  if (!topics || topics.length === 0) {
+    return <p>토픽이 없습니다.</p>
+  }
 
   return (
     <>
@@ -49,13 +31,13 @@ export default function TopicsList() {
             <h2 className="text-2xl font-bold">{topic.title}</h2>
             <div>{topic.description}</div>
             <div className="flex gap-4 text-sm text-slate-600 mt-2">
-              <p>Created: {topic.createdAt}</p>
-              <p>Updated: {topic.updatedAt}</p>
+              <p>생성: {new Date(topic.createdAt).toLocaleDateString()}</p>
+              <p>수정: {new Date(topic.updatedAt).toLocaleDateString()}</p>
             </div>
           </div>
           <div className="flex gap-2">
             <RemoveBtn id={topic._id} />
-            <Link href={`/editTopic/${topic._id}`} aria-label="Edit topic">
+            <Link href={`/editTopic/${topic._id}`}>
               <HiPencilAlt size={24} />
             </Link>
           </div>
